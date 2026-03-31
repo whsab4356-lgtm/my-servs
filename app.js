@@ -1,33 +1,16 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
-const express = require('express');
-const puppeteer = require('puppeteer');
 
-const app = express();
-
-// ===== سيرفر Render =====
-app.get('/', (req, res) => {
-    res.send('Bot is running ✅');
-});
-
-app.listen(process.env.PORT || 3000, () => {
-    console.log('🌐 Server running...');
-});
-
-// ===== إعداد البوت =====
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        executablePath: puppeteer.executablePath(),
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
 
-// ===== المواقع =====
 const SITES = {
     qessa: "https://qeseh.net/",
     arabseed: "https://asd.pics/category/turkish-series-2/",
@@ -50,28 +33,28 @@ if (fs.existsSync(DATA_FILE)) {
     seen = new Set(data);
 }
 
-// ===== QR =====
+// ✅ QR كرابط
 client.on('qr', qr => {
-    console.log("📱 امسح QR:");
-    qrcode.generate(qr, { small: true });
+    console.log("📱 افتح الرابط لمسح QR:");
+    const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + qr;
+    console.log(qrUrl);
 });
 
-// ===== جاهز =====
 client.on('ready', () => {
     console.log('✅ البوت جاهز!');
     setInterval(checkAllSites, 60000);
 });
 
-// ===== فحص =====
 async function checkAllSites() {
     await checkQessa();
     await checkArabSeed();
     await checkCima4u();
 }
 
-// ===== قصة عشق =====
+// ================= قصة عشق =================
 async function checkQessa() {
     try {
+        console.log("🔍 فحص قصة عشق...");
         const res = await axios.get(SITES.qessa);
         const $ = cheerio.load(res.data);
 
@@ -88,9 +71,10 @@ async function checkQessa() {
     }
 }
 
-// ===== عرب سيد =====
+// ================= عرب سيد =================
 async function checkArabSeed() {
     try {
+        console.log("🔍 فحص عرب سيد...");
         const res = await axios.get(SITES.arabseed);
         const $ = cheerio.load(res.data);
 
@@ -107,9 +91,10 @@ async function checkArabSeed() {
     }
 }
 
-// ===== سيما فور يو =====
+// ================= سيما فور يو =================
 async function checkCima4u() {
     try {
+        console.log("🔍 فحص سيما فور يو...");
         const res = await axios.get(SITES.cima4u);
         const $ = cheerio.load(res.data);
 
@@ -129,7 +114,7 @@ async function checkCima4u() {
     }
 }
 
-// ===== إرسال =====
+// ================= الإرسال =================
 async function handleEpisode(title, link, img, source) {
     if (!title || !link) return;
 
@@ -142,11 +127,10 @@ async function handleEpisode(title, link, img, source) {
 
             const seriesName = title.split(" الحلقة ")[0] || "مسلسل جديد";
 
-            const caption = `🎬🔥 حلقة جديدة 🔥🎬
+            const caption = `🎬🔥 حلقة جديدة نزلت الآن! 🔥🎬
 
-📺 المسلسل: ${seriesName}
+📺 اسم المسلسل: ${seriesName}
 🎞️ الحلقة: ${title}
-
 📡 المصدر: ${source}
 
 🔗 الرابط:
@@ -169,7 +153,7 @@ ${link}
                     }
                 }
             } catch (err) {
-                console.log("❌ فشل إرسال الصورة:", err.message);
+                console.log("❌ فشل إرسال:", err.message);
             }
         }
     }
