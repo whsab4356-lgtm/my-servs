@@ -4,10 +4,11 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
 const express = require('express');
+const puppeteer = require('puppeteer');
 
 const app = express();
 
-// ================= السيرفر (مهم لـ Render) =================
+// ===== سيرفر Render =====
 app.get('/', (req, res) => {
     res.send('Bot is running ✅');
 });
@@ -16,16 +17,17 @@ app.listen(process.env.PORT || 3000, () => {
     console.log('🌐 Server running...');
 });
 
-// ================= إعداد البوت =================
+// ===== إعداد البوت =====
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
+        executablePath: puppeteer.executablePath(),
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
 
-// ================= المواقع =================
+// ===== المواقع =====
 const SITES = {
     qessa: "https://qeseh.net/",
     arabseed: "https://asd.pics/category/turkish-series-2/",
@@ -48,26 +50,26 @@ if (fs.existsSync(DATA_FILE)) {
     seen = new Set(data);
 }
 
-// ================= QR =================
+// ===== QR =====
 client.on('qr', qr => {
     console.log("📱 امسح QR:");
     qrcode.generate(qr, { small: true });
 });
 
-// ================= جاهز =================
+// ===== جاهز =====
 client.on('ready', () => {
     console.log('✅ البوت جاهز!');
     setInterval(checkAllSites, 60000);
 });
 
-// ================= فحص المواقع =================
+// ===== فحص =====
 async function checkAllSites() {
     await checkQessa();
     await checkArabSeed();
     await checkCima4u();
 }
 
-// ================= قصة عشق =================
+// ===== قصة عشق =====
 async function checkQessa() {
     try {
         const res = await axios.get(SITES.qessa);
@@ -86,7 +88,7 @@ async function checkQessa() {
     }
 }
 
-// ================= عرب سيد =================
+// ===== عرب سيد =====
 async function checkArabSeed() {
     try {
         const res = await axios.get(SITES.arabseed);
@@ -105,7 +107,7 @@ async function checkArabSeed() {
     }
 }
 
-// ================= سيما فور يو =================
+// ===== سيما فور يو =====
 async function checkCima4u() {
     try {
         const res = await axios.get(SITES.cima4u);
@@ -127,7 +129,7 @@ async function checkCima4u() {
     }
 }
 
-// ================= الإرسال =================
+// ===== إرسال =====
 async function handleEpisode(title, link, img, source) {
     if (!title || !link) return;
 
