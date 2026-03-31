@@ -1,8 +1,10 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
 
+// 🔥 أهم تعديل (بدون executablePath)
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -33,11 +35,9 @@ if (fs.existsSync(DATA_FILE)) {
     seen = new Set(data);
 }
 
-// ✅ QR كرابط
 client.on('qr', qr => {
-    console.log("📱 افتح الرابط لمسح QR:");
-    const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + qr;
-    console.log(qrUrl);
+    console.log("📱 امسح QR:");
+    qrcode.generate(qr, { small: true });
 });
 
 client.on('ready', () => {
@@ -131,6 +131,7 @@ async function handleEpisode(title, link, img, source) {
 
 📺 اسم المسلسل: ${seriesName}
 🎞️ الحلقة: ${title}
+
 📡 المصدر: ${source}
 
 🔗 الرابط:
@@ -153,7 +154,7 @@ ${link}
                     }
                 }
             } catch (err) {
-                console.log("❌ فشل إرسال:", err.message);
+                console.log("❌ فشل الإرسال:", err.message);
             }
         }
     }
